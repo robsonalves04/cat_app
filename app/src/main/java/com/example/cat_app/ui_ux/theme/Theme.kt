@@ -1,4 +1,4 @@
-package com.example.cat_app.ui.theme
+package com.example.cat_app.ui_ux.theme
 
 import android.app.Activity
 import android.os.Build

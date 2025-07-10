@@ -1,4 +1,4 @@
-package com.example.cat_app.navigate
+package com.example.cat_app.ui_ux.components.navigate
 
 import android.os.Build
 import androidx.annotation.RequiresApi

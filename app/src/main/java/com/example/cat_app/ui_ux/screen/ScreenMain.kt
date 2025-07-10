@@ -1,4 +1,4 @@
-package com.example.cat_app.screen
+package com.example.cat_app.ui_ux.screen
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import com.example.cat_app.navigate.AppNavigation
+import com.example.cat_app.ui_ux.components.navigate.AppNavigation
 
 class ScreenMain : ComponentActivity() {
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")

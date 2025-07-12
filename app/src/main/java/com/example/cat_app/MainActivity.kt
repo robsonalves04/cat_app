@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.screen
+package com.example.cat_app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

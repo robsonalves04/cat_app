@@ -11,6 +11,6 @@ interface IBreedsService {
     suspend fun getBreedsList(
         @Query("limit") limit: Int = 10,
         @Query("page") page: Int = 0
-    ): Response<BreedsModel>
+    ): Response<List<BreedsModel>>
 
 }

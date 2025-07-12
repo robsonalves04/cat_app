@@ -24,7 +24,7 @@ import java.net.URL
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ScreenOnboard(onCardClick: (OnboardOption) -> Unit, ) {
+fun ScreenOnboard(onCardClick: (OnboardOption) -> Unit) {
     val options = onboardOptions
 
     LazyVerticalGrid(
@@ -37,16 +37,16 @@ fun ScreenOnboard(onCardClick: (OnboardOption) -> Unit, ) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(options) { option ->
-            OptionsCard (option = option, onClick = { onCardClick(option) })
+            OptionsCard(option = option, onClick = { onCardClick(option) })
         }
     }
 }
 
 
 val onboardOptions = listOf(
-    OnboardOption("Raças", "Conheça todas as raças", Icons.Default.Pets, onClick = {} ),
-    OnboardOption("Favoritos", "Veja os seus preferidos", Icons.Default.Favorite),
-    OnboardOption("Sobre", "Sobre o app", Icons.Default.Info),
+    OnboardOption("Raças", "Conheça todas as raças", Icons.Default.Pets, route = "list"),
+    OnboardOption("Favoritos", "Veja os seus preferidos", Icons.Default.Favorite, route = "favorites"),
+    OnboardOption("Sobre", "Sobre o app", Icons.Default.Info, route = "about"),
     OnboardOption("Ajuda", "Central de dúvidas", Icons.Default.Help)
 )
 
@@ -54,7 +54,8 @@ data class OnboardOption(
     val title: String,
     val description: String,
     val icon: ImageVector,
-    val image: URL ? = null,
-    val onClick: (() -> Unit)? = null
+    val image: URL? = null,
+    val onClick: (() -> Unit)? = null,
+    val route: String? = null
 
 )

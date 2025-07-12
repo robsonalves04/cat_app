@@ -39,9 +39,7 @@ fun OptionsCard(
             .padding(8.dp)
             .fillMaxWidth()
             .aspectRatio(1f) // quadrado
-            .clickable(enabled = option.onClick != null) {
-                option.onClick?.invoke()
-            },
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
         Column(

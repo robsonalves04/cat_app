@@ -24,12 +24,12 @@ class BreedsService : IBreedsService {
             .create()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.thecatapi.com/")
             .addConverterFactory(GsonConverterFactory.create(gson))
+            .baseUrl("https://api.thecatapi.com/")
             .client(client)
             .build()
 
-        apiService = retrofit.create(BreedsService::class.java)
+        apiService = retrofit.create(IBreedsService::class.java)
     }
 
     override suspend fun getBreedsList(

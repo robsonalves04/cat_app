@@ -28,8 +28,9 @@ class Starting : Application() {
             single<IBreedsService> { BreedsService() }
         }
 
+
         val viewModelModule = module {
-            viewModel { BreedsViewModel() }
+            viewModel { BreedsViewModel(get()) }
         }
 
 

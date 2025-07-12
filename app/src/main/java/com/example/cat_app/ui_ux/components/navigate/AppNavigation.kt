@@ -1,22 +1,27 @@
 package com.example.cat_app.ui_ux.components.navigate
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cat_app.ui_ux.screen.ScreenBreeds
 import com.example.cat_app.ui_ux.screen.ScreenOnboard
 import com.example.cat_app.ui_ux.screen.ScreenSplash
+import com.example.cat_app.viewmodel.BreedsViewModel
+import org.koin.androidx.compose.koinViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val context = LocalContext.current
 
-//    val dataViewModel: ChanelViewModel = koinViewModel()
+    val dataViewModel: BreedsViewModel = koinViewModel()
 
     NavHost(navController = navController, startDestination = "splash") {
         //tela de splash
@@ -29,25 +34,22 @@ fun AppNavigation() {
                 }
             )
         }
-        //tela de onboard
-        composable("onboard") {
-            ScreenOnboard { selectedOption ->
-                when (selectedOption.title) {
-                    "Raças" -> navController.navigate("list")
-                    "Favoritos" -> navController.navigate("favorites")
-                    "Sobre" -> navController.navigate("about")
-                    else -> {} // ou mostrar toast
+            //tela de onboard
+            composable("onboard") {
+                ScreenOnboard { selectedOption ->
+                    selectedOption.route?.let { route ->
+                        navController.navigate(route)
+                    } ?: run {
+                        Toast.makeText(context, "Opção ainda não disponível", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
-        }
 
-        //tela de lista de raças
+            //tela de lista de raças
         composable("list") {
-            ScreenBreeds(
-                navigateToNextScreen = {
-                    navController.navigate("onboard")
-                }
-            )
+            ScreenBreeds(viewModel = dataViewModel) {
+                navController.popBackStack()
+            }
         }
     }
 }

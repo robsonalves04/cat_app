@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cat_app.ui_ux.screen.ScreenBreeds
+import com.example.cat_app.ui_ux.screen.ScreenFavorites
 import com.example.cat_app.ui_ux.screen.ScreenOnboard
 import com.example.cat_app.ui_ux.screen.ScreenSplash
 import com.example.cat_app.viewmodel.BreedsViewModel
@@ -34,22 +35,29 @@ fun AppNavigation() {
                 }
             )
         }
-            //tela de onboard
-            composable("onboard") {
-                ScreenOnboard { selectedOption ->
-                    selectedOption.route?.let { route ->
-                        navController.navigate(route)
-                    } ?: run {
-                        Toast.makeText(context, "Opção ainda não disponível", Toast.LENGTH_SHORT).show()
-                    }
+        //tela de onboard
+        composable("onboard") {
+            ScreenOnboard { selectedOption ->
+                selectedOption.route?.let { route ->
+                    navController.navigate(route)
+                } ?: run {
+                    Toast.makeText(context, "Opção ainda não disponível", Toast.LENGTH_SHORT).show()
                 }
             }
-
-            //tela de lista de raças
+        }
+        //tela de lista de raças
         composable("list") {
-            ScreenBreeds(viewModel = dataViewModel) {
-                navController.popBackStack()
+            ScreenBreeds(viewModel = dataViewModel,
+                navigateBack = { navController.popBackStack() }) {
+
             }
         }
+        //tela de favoritos
+        composable("favorites") {
+            ScreenFavorites(
+                viewModel = dataViewModel,
+                navigateBack = { navController.popBackStack() })
+        }
+
     }
 }

@@ -67,6 +67,9 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-placeholder-material:0.28.0")
     implementation("androidx.compose.foundation:foundation:1.6.0")
     implementation ("androidx.navigation:navigation-compose:2.7.7")
+    implementation("com.google.accompanist:accompanist-pager:0.32.0")
+
+    implementation(libs.androidx.foundation.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

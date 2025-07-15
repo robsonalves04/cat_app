@@ -5,22 +5,20 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cat_app.data.api.IBreedsService
+import com.example.cat_app.data.models.BreedsImageModel
 import com.example.cat_app.data.models.BreedsModel
-import com.example.cat_app.data.models.FavouritesModel
-import com.example.cat_app.data.models.FavouritesRespondeModel
+import com.example.cat_app.data.models.FavoritesModel
+import com.example.cat_app.data.models.FavoritesRespondeModel
 import com.example.cat_app.network.networkConection
 import com.example.cat_app.ui_ux.components.toats.toastSnackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable.isActive
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import java.io.IOException
-import java.net.URLEncoder
 
 
 class BreedsViewModel(private val breedsService: IBreedsService) : ViewModel() {
@@ -41,10 +39,19 @@ class BreedsViewModel(private val breedsService: IBreedsService) : ViewModel() {
     var isLastPage = false
 
 
-    private val _favorites = mutableStateListOf<FavouritesRespondeModel>()
-    val favorites: List<FavouritesRespondeModel> get() = _favorites
+    private val _favorites = mutableStateListOf<FavoritesRespondeModel>()
+    val favorites: List<FavoritesRespondeModel> get() = _favorites
 
 
+    val uniqueBreeds: List<BreedsModel>
+        get() = _breedItems.distinctBy { it.referenceImageId }
+
+
+    private val _searchResults = mutableStateListOf<BreedsModel>()
+    val searchResults: List<BreedsModel> get() = _searchResults
+
+    private val _isSearching = mutableStateOf(false)
+    val isSearching: State<Boolean> get() = _isSearching
 
 
     // Busca as raças da API
@@ -87,9 +94,19 @@ class BreedsViewModel(private val breedsService: IBreedsService) : ViewModel() {
             try {
                 val response = breedsService.getFavourites()
                 if (response.isSuccessful) {
+                    val favList = response.body().orEmpty()
                     _favorites.clear()
-                    response.body()?.let { _favorites.addAll(it) }
+                    _favorites.addAll(response.body().orEmpty())
+//                    response.body()?.let { _favorites.addAll(it)
+
+                    favList.forEach { fav ->
+                        val name = breedItems.find { it.referenceImageId == fav.imageId }?.name ?: "Desconhecido"
+                        Log.d("FAVORITE_DEBUG", "✅ Favorito: $name (imageId = ${fav.imageId})")
+                    }
+
+
                     Log.d("FAVORITES", "🐾 Favoritos carregados: ${_favorites.size}")
+
                 } else {
                     toastSnackbar(context, "Erro ao carregar favoritos")
                 }
@@ -97,32 +114,82 @@ class BreedsViewModel(private val breedsService: IBreedsService) : ViewModel() {
                 Log.e("FAVORITES", "Erro ao buscar favoritos: ${e.message}")
             }
         }
+
+
+
     }
 
-    // Adiciona ou remove favorito
-    fun toggleFavorite(context: Context, breed: BreedsModel) {
-        viewModelScope.launch {
-            val isFav = favorites.any { it.imageId == breed.referenceImageId }
 
-            if (isFav) {
-                val favId = favorites.find { it.imageId == breed.referenceImageId }?.id ?: return@launch
-                val response = breedsService.removeFavourite(favId)
-                if (response.isSuccessful) {
-                    _favorites.removeAll { it.id == favId
+    fun addFavorite(context: Context, breed: BreedsModel) {
+        viewModelScope.launch {
+//            val alreadyExists = favorites.any { it.imageId == breed.referenceImageId }
+//            if (alreadyExists) return@launch
+
+            val fav = FavoritesModel(imageId = breed.referenceImageId ?: return@launch)
+            val response = breedsService.addFavourite(fav)
+            if (response.isSuccessful) {
+                response.body()?.let {
+
+                    if (_favorites.none { fav -> fav.imageId == it.imageId }) {
+                        _favorites.add(it)
                     }
-                    Log.d("FAVORITE", "❌ Removido dos favoritos: ${breed.name}")
-                    toastSnackbar(context, "${breed.name} removido dos favoritos",
-                        backgroundColor = android.graphics.Color.parseColor("#FF0000")
+
+
+                    Log.d("FAVORITE", "✅ Adicionado aos favoritos: ${breed.name}")
+                    toastSnackbar(
+                        context,
+                        "${breed.name} adicionado aos favoritos",
+                        backgroundColor = android.graphics.Color.parseColor("#00FF00"),
+                        textColor = android.graphics.Color.parseColor("#000000")
                     )
                 }
-            } else {
-                val fav = FavouritesModel(imageId = breed.referenceImageId ?: return@launch)
-                val response = breedsService.addFavourite(fav)
+            }
+        }
+    }
+
+    fun removeFavorite(context: Context, breed: BreedsModel) {
+        viewModelScope.launch {
+            val fav = favorites.find { it.imageId == breed.referenceImageId } ?: return@launch
+            val response = breedsService.removeFavourite(fav.id)
+            if (response.isSuccessful) {
+                _favorites.removeAll { it.id == fav.id }
+
+                Log.d("FAVORITE", "❌ Removido dos favoritos: ${breed.name}")
+                toastSnackbar(
+                    context,
+                    "${breed.name} removido dos favoritos",
+                    backgroundColor = android.graphics.Color.parseColor("#FF0000")
+                )
+            }
+        }
+    }
+
+    fun toggleFavorite(context: Context, breed: BreedsModel) {
+        viewModelScope.launch {
+            val imageId = breed.referenceImageId ?: return@launch
+            val isFav = favorites.any { it.imageId == imageId }
+
+            if (isFav) {
+                val favId = favorites.find { it.imageId == imageId }?.id ?: return@launch
+                val response = breedsService.removeFavourite(favId)
                 if (response.isSuccessful) {
-                    response.body()?.let { _favorites.add(it)
+                    _favorites.removeAll { it.id == favId }
+                    toastSnackbar(context, "${breed.name} removido dos favoritos",
+                        backgroundColor = android.graphics.Color.parseColor("#FF0000"))
+                    Log.d("FAVORITE", "❌ Removido dos favoritos: ${breed.name}")
+                }
+            } else {
+                val response = breedsService.addFavourite(FavoritesModel(imageId))
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        _favorites.add(it)
+                        toastSnackbar(
+                            context,
+                            "${breed.name} adicionado aos favoritos",
+                            backgroundColor = android.graphics.Color.parseColor("#00FF00"),
+                            textColor = android.graphics.Color.parseColor("#000000"))
                         Log.d("FAVORITE", "✅ Adicionado aos favoritos: ${breed.name}")
-                        toastSnackbar(context, "${breed.name} adicionado aos favoritos",
-                            backgroundColor = android.graphics.Color.parseColor("#00FF00") , textColor = android.graphics.Color.parseColor("#000000"))}
+                    }
                 }
             }
         }
@@ -131,6 +198,31 @@ class BreedsViewModel(private val breedsService: IBreedsService) : ViewModel() {
     fun isBreedFavorite(breed: BreedsModel): Boolean {
         return favorites.any { it.imageId == breed.referenceImageId }
     }
+
+    fun searchBreeds(context: Context, query: String) {
+        viewModelScope.launch {
+            try {
+                _isSearching.value = true
+                val response = breedsService.searchBreeds(query)
+                if (response.isSuccessful) {
+                    _searchResults.clear()
+                    _searchResults.addAll(response.body() ?: emptyList())
+                    Log.d("SEARCH", "🔍 Resultados: ${_searchResults.size}")
+                } else {
+                    toastSnackbar(context, "Erro ao buscar: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("SEARCH", "Erro: ${e.message}")
+                toastSnackbar(context, "Erro na busca: ${e.message}")
+            }
+        }
+    }
+
+    fun clearSearch() {
+        _isSearching.value = false
+        _searchResults.clear()
+    }
+
 
     // Repetir requisição se conexão voltar
     fun tentarRecarregarPeriodicamente(context: Context) {
@@ -152,17 +244,11 @@ class BreedsViewModel(private val breedsService: IBreedsService) : ViewModel() {
         }
     }
 
-    // Se precisar de função para limpar lista
-    fun clearBreeds() {
-        _breedItems.clear()
-    }
-
     fun getBreedImageUrl(breed: BreedsModel): String {
         // Usa a URL direta se estiver disponível
         return breed.image?.url
             ?: breed.referenceImageId?.let { "https://cdn2.thecatapi.com/images/$it.jpg" }
             ?: "https://cdn2.thecatapi.com/images/default.jpg" // fallback
     }
-
 
 }

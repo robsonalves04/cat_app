@@ -2,7 +2,7 @@ package com.example.cat_app.ui_ux.screen
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -11,16 +11,23 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,95 +47,106 @@ fun ScreenBreeds(
     navigateToNextScreen: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val breedList = viewModel.breedItems
-    val isLoading = viewModel.isLoading.value
-    val listState = rememberLazyListState()
     val breeds = viewModel.breedItems
-    val coroutineScope = rememberCoroutineScope()
+    val favorites = viewModel.favorites
+    val listState = rememberLazyListState()
+    var searchQuery by remember { mutableStateOf("") }
 
+    val isSearching by viewModel.isSearching
+    val searchResults = viewModel.searchResults
+    val allBreeds = viewModel.breedItems
 
-    // Primeira carga
-    LaunchedEffect(Unit) {
-        viewModel.fetchBreeds(context)
+    // limpar dados apos a busca
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearSearch()
+        }
     }
 
-    // Paginação ao fim do scroll
+    // Carrega dados iniciais
+    LaunchedEffect(Unit) {
+        if (favorites.isEmpty()) viewModel.fetchFavorites(context)
+        if (breeds.isEmpty()) viewModel.fetchBreeds(context)
+    }
+
+    // Paginação
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .distinctUntilChanged()
             .collect { lastVisibleIndex ->
-                if (lastVisibleIndex == viewModel.breedItems.size - 1 && !viewModel.isLoading.value) {
+                if (!isSearching && lastVisibleIndex == allBreeds.size - 1 && !viewModel.isLoading.value) {
                     viewModel.fetchBreeds(context, loadMore = true)
                 }
             }
     }
 
-
-    Scaffold (
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("🐾 Lista de Gatos") },
                 navigationIcon = {
-                    IconButton (onClick = navigateBack) {
+                    IconButton(onClick = navigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
                     }
                 }
             )
         }
-    ) { padding ->
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
 
-            items(breeds) { breed ->
-                val isFavorite = viewModel.isBreedFavorite(breed)
-                BreedItemCard(
-                    breed = breed,
-                    viewModel = viewModel,
-                    initialFavorite = isFavorite,
-                    onFavoriteClick = {
-                        viewModel.toggleFavorite(context, breed)
-                    },
-                    onClick = {
-                        // Exemplo: você pode navegar ou exibir detalhes
-
+    ) { paddingValues ->
+        val breedsToShow = if (isSearching) searchResults else allBreeds
+        Column(modifier = Modifier.padding(paddingValues)) {
+            // Barra de pesquisa
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    if (searchQuery.isNotBlank()) {
+                        viewModel.searchBreeds(context, searchQuery)
+                    } else {
+                        viewModel.clearSearch()
                     }
-                )
-            }
-
-            items(breedList) { breed ->
-                val isFav = viewModel.isBreedFavorite(breed) // função que retorna se é favorito
-                BreedItemCard(
-                    initialFavorite = isFav,
-                    onFavoriteClick = { fav ->
-                        if (fav) {
-                            viewModel.toggleFavorite(context,breed)
-                        } else {
-                            viewModel.toggleFavorite(context,breed)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                label = { Text("Buscar raça...") },
+                singleLine = true,
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = {
+                            searchQuery = ""
+                            viewModel.clearSearch()
+                        }) {
+                            Icon(Icons.Default.Close, contentDescription = "Limpar busca")
                         }
-                    },
-                    onClick = { /* ação ao clicar no card */ },
-                    breed = breed,
-                    viewModel = viewModel
-                )
-            }
+                    }
+                },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
+            )
 
-            if (viewModel.isLoading.value) {
-                item {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                            .wrapContentWidth(Alignment.CenterHorizontally)
+            LazyColumn(state = listState) {
+                items(breedsToShow) { breed ->
+                    // Card de gatos (retorno da API)
+                    BreedItemCard(
+                        breed = breed,
+                        viewModel = viewModel,
+                        onClick = {
+                            navigateToNextScreen()
+                        }
                     )
+                }
+                // Loading de espera
+                if (!isSearching && viewModel.isLoading.value) {
+                    item {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth()
+                                .wrapContentWidth(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
             }
         }
     }
 }
-
-
-

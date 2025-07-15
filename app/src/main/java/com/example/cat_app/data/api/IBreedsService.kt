@@ -1,8 +1,10 @@
 package com.example.cat_app.data.api
 
+import com.example.cat_app.data.models.BreedsImageModel
 import com.example.cat_app.data.models.BreedsModel
-import com.example.cat_app.data.models.FavouritesModel
-import com.example.cat_app.data.models.FavouritesRespondeModel
+
+import com.example.cat_app.data.models.FavoritesModel
+import com.example.cat_app.data.models.FavoritesRespondeModel
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -21,19 +23,27 @@ interface IBreedsService {
 
     // GET - Lista de favoritos
     @GET("v1/favourites")
-    suspend fun getFavourites(): Response<List<FavouritesRespondeModel>>
+    suspend fun getFavourites(): Response<List<FavoritesRespondeModel>>
 
     // POST - Adiciona um favorito
     @POST("v1/favourites")
     suspend fun addFavourite(
-        @Body request: FavouritesModel
-    ): Response<FavouritesRespondeModel>
+        @Body request: FavoritesModel
+    ): Response<FavoritesRespondeModel>
 
     // DELETE - Remove um favorito
     @DELETE("v1/favourites/{favourite_id}")
     suspend fun removeFavourite(
         @Path("favourite_id") favouriteId: Int
     ): Response<Unit>
+
+
+    // GET - Pesquisa
+    @GET("v1/breeds/search")
+    suspend fun searchBreeds(
+        @Query("q") query: String,
+        @Query("attach_image") attachImage: Int = 1
+    ): Response<List<BreedsModel>>
 
 
 }

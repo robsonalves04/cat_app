@@ -1,7 +1,6 @@
 package com.example.cat_app.ui_ux.components.navigate
 
 import android.os.Build
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
@@ -36,21 +35,24 @@ fun AppNavigation() {
             )
         }
         //tela de onboard
-        composable("onboard") {
-            ScreenOnboard { selectedOption ->
-                selectedOption.route?.let { route ->
-                    navController.navigate(route)
-                } ?: run {
-                    Toast.makeText(context, "Opção ainda não disponível", Toast.LENGTH_SHORT).show()
-                }
-            }
+        composable("onboard") {{}
+            ScreenOnboard (viewModel = dataViewModel,
+                onNavigateToFavorites = {navController.navigate("favorites")},
+                onNavigateToBreeds = {navController.navigate("list")},
+                onNavigateToAbout = {},
+                onNavigateToHelp = {} )
+//            { selectedOption ->
+//                selectedOption.route?.let { route ->
+//                    navController.navigate(route)
+//                } ?: run {
+//                    Toast.makeText(context, "Opção ainda não disponível", Toast.LENGTH_SHORT).show()
+//                }
+//            }
         }
         //tela de lista de raças
         composable("list") {
             ScreenBreeds(viewModel = dataViewModel,
-                navigateBack = { navController.popBackStack() }) {
-
-            }
+                navigateBack = { navController.popBackStack() })
         }
         //tela de favoritos
         composable("favorites") {

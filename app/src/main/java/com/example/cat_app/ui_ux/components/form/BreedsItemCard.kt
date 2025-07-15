@@ -19,10 +19,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,20 +36,18 @@ import com.example.cat_app.viewmodel.BreedsViewModel
 
 @Composable
 fun BreedItemCard(
-    initialFavorite: Boolean,
-    onFavoriteClick: (Boolean) -> Unit,
     onClick: () -> Unit,
     breed: BreedsModel,
     viewModel: BreedsViewModel
 ) {
     val imageUrl = viewModel.getBreedImageUrl(breed)
     val context = LocalContext.current
-    var isFavorite by remember { mutableStateOf(initialFavorite) }
+    val isFavorite = viewModel.favorites.any { it.imageId == breed.referenceImageId }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.dp, horizontal = 8.dp)
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -78,7 +72,7 @@ fun BreedItemCard(
 
             Column(
                 modifier = Modifier
-                    .weight(1f) // Ocupa o espaço entre a imagem e o botão
+                    .weight(1f)
             ) {
                 breed.name?.let {
                     Text(
@@ -107,17 +101,14 @@ fun BreedItemCard(
                 }
             }
 
-            IconButton(onClick = {
-                isFavorite = !isFavorite // muda o estado local
-                onFavoriteClick(isFavorite) // avisa para o ViewModel ou callback externo
-            }) {
+            IconButton(onClick = { viewModel.toggleFavorite(context, breed) }) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = if (isFavorite) "Remover dos favoritos" else "Adicionar aos favoritos",
                     tint = if (isFavorite) Color.Red else Color.Gray
                 )
             }
+
         }
     }
 }
-

@@ -26,6 +26,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.example.cat_app.data.models.BreedsModel
+import com.example.cat_app.ui_ux.components.form.BreedDialog
 import com.example.cat_app.ui_ux.components.form.BreedItemCard
 import com.example.cat_app.viewmodel.BreedsViewModel
 
@@ -36,7 +38,10 @@ fun ScreenFavorites(viewModel: BreedsViewModel, navigateBack: () -> Unit = {}) {
     val listState = rememberLazyListState()
     var searchQuery by remember { mutableStateOf("") }
     val favorites = remember { derivedStateOf { viewModel.favorites.distinctBy { it.imageId } } }
+    val favorites_viewmodel = viewModel.favorites
 
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedBreed by remember { mutableStateOf<BreedsModel?>(null)}
 
     // limpar dados apos a busca
     DisposableEffect(Unit) {
@@ -83,15 +88,35 @@ fun ScreenFavorites(viewModel: BreedsViewModel, navigateBack: () -> Unit = {}) {
                 ) {
                     items(favorites.value) { fav ->
                         val breed = viewModel.breedItems.find { it.referenceImageId == fav.imageId }
+                        val isFavorite = favorites_viewmodel.any { it.imageId == breed?.referenceImageId }
                         if (breed != null) {
                             BreedItemCard(
                                 breed = breed,
+                                onFavoriteClick = {
+                                    if (isFavorite) {
+                                        viewModel.removeFavorite(context, breed)
+                                    } else {
+                                        viewModel.addFavorite(context, breed)
+                                    }
+                                },
+                                isFavorite = isFavorite,
                                 viewModel = viewModel,
-                                onClick = { /* Você pode abrir detalhes aqui também */ }
+                                onClick = {
+                                    selectedBreed = breed
+                                    showDialog = true
+                                }
                             )
                         }
                     }
                 }
+                if (showDialog && selectedBreed != null) {
+                    BreedDialog(
+                        breed = selectedBreed!!,
+                        onDismiss = { showDialog = false }
+                    )
+                }
+
+
             }
         }
     }

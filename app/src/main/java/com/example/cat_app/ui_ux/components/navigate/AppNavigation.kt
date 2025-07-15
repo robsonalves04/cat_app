@@ -41,13 +41,6 @@ fun AppNavigation() {
                 onNavigateToBreeds = {navController.navigate("list")},
                 onNavigateToAbout = {},
                 onNavigateToHelp = {} )
-//            { selectedOption ->
-//                selectedOption.route?.let { route ->
-//                    navController.navigate(route)
-//                } ?: run {
-//                    Toast.makeText(context, "Opção ainda não disponível", Toast.LENGTH_SHORT).show()
-//                }
-//            }
         }
         //tela de lista de raças
         composable("list") {

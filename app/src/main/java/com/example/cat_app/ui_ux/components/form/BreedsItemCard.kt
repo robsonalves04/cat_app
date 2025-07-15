@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,13 +35,13 @@ import com.example.cat_app.viewmodel.BreedsViewModel
 
 @Composable
 fun BreedItemCard(
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
     onClick: () -> Unit,
     breed: BreedsModel,
     viewModel: BreedsViewModel
 ) {
     val imageUrl = viewModel.getBreedImageUrl(breed)
-    val context = LocalContext.current
-    val isFavorite = viewModel.favorites.any { it.imageId == breed.referenceImageId }
 
     Card(
         modifier = Modifier
@@ -84,7 +83,7 @@ fun BreedItemCard(
                 }
                 breed.origin?.let {
                     Text(
-                        text = "Origem: $it",
+                        text = "Origin: $it",
                         style = MaterialTheme.typography.bodySmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -101,7 +100,7 @@ fun BreedItemCard(
                 }
             }
 
-            IconButton(onClick = { viewModel.toggleFavorite(context, breed) }) {
+            IconButton(onClick = onFavoriteClick) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = if (isFavorite) "Remover dos favoritos" else "Adicionar aos favoritos",

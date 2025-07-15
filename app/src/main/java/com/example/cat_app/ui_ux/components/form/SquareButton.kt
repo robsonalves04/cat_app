@@ -11,15 +11,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun SquareButton(text: String, onClick: () -> Unit) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val buttonSize = screenWidth / 2.5f
+
     Button(
         onClick = onClick,
         modifier = Modifier
-            .size(180.dp)
+            .size(buttonSize)
             .clip(RoundedCornerShape(8.dp)),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFFBDBDBD),

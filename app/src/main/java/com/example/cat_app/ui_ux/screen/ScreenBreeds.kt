@@ -1,6 +1,7 @@
 package com.example.cat_app.ui_ux.screen
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.cat_app.data.models.BreedsModel
+import com.example.cat_app.ui_ux.components.form.BreedDialog
 import com.example.cat_app.ui_ux.components.form.BreedItemCard
 import com.example.cat_app.viewmodel.BreedsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -49,12 +52,16 @@ fun ScreenBreeds(
     val context = LocalContext.current
     val breeds = viewModel.breedItems
     val favorites = viewModel.favorites
+
     val listState = rememberLazyListState()
     var searchQuery by remember { mutableStateOf("") }
 
     val isSearching by viewModel.isSearching
     val searchResults = viewModel.searchResults
     val allBreeds = viewModel.breedItems
+
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedBreed by remember { mutableStateOf<BreedsModel?>(null) }
 
     // limpar dados apos a busca
     DisposableEffect(Unit) {
@@ -65,8 +72,9 @@ fun ScreenBreeds(
 
     // Carrega dados iniciais
     LaunchedEffect(Unit) {
-        if (favorites.isEmpty()) viewModel.fetchFavorites(context)
+        viewModel.fetchFavorites(context)
         if (breeds.isEmpty()) viewModel.fetchBreeds(context)
+
     }
 
     // Paginação
@@ -125,18 +133,34 @@ fun ScreenBreeds(
             )
 
             LazyColumn(state = listState) {
-                items(breedsToShow) { breed ->
+                items(breedsToShow,
+                    key = { it.referenceImageId ?: it.id ?: it.hashCode().toString() }
+                ) { breed ->
+                    val isFavorite = favorites.any { it.imageId == breed.referenceImageId }
+                    Log.d("CHECK_FAV", "🐱 ${breed.name} isFavorite=$isFavorite")
+
                     // Card de gatos (retorno da API)
                     BreedItemCard(
                         breed = breed,
                         viewModel = viewModel,
+                        isFavorite = isFavorite,
+                        onFavoriteClick = {
+                            if (isFavorite) {
+                                viewModel.removeFavorite(context, breed)
+                            } else {
+                                viewModel.addFavorite(context, breed)
+                            }
+                        },
                         onClick = {
-                            navigateToNextScreen()
+                            selectedBreed = breed
+                            showDialog = true
                         }
                     )
+
+
                 }
                 // Loading de espera
-                if (!isSearching && viewModel.isLoading.value) {
+                if (!isSearching && viewModel.isLoading.value && showDialog) {
                     item {
                         CircularProgressIndicator(
                             modifier = Modifier
@@ -146,6 +170,12 @@ fun ScreenBreeds(
                         )
                     }
                 }
+            }
+            if (showDialog && selectedBreed != null) {
+                BreedDialog(
+                    breed = selectedBreed!!,
+                    onDismiss = { showDialog = false }
+                )
             }
         }
     }

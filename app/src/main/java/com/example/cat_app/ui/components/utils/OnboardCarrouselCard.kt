@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.components.form
+package com.example.cat_app.ui.components.utils
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,12 +23,18 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.cat_app.R
 import com.example.cat_app.data.models.BreedsModel
+import com.example.cat_app.viewmodel.BreedsViewModel
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 
 
 @Composable
-fun OnboardingCarousel(breeds: List<BreedsModel>, pagerState: PagerState) {
+fun OnboardingCarousel(
+    breeds: List<BreedsModel>,
+    pagerState: PagerState,
+    viewModel: BreedsViewModel)
+{
+
     if (breeds.isNotEmpty()) {
     HorizontalPager(
         count = breeds.size ,
@@ -38,8 +44,7 @@ fun OnboardingCarousel(breeds: List<BreedsModel>, pagerState: PagerState) {
             .height(400.dp)
     ) { page ->
         val breed = breeds[page]
-        val imageUrl = breed.image?.url ?: "https://cdn2.thecatapi.com/images/${breed.referenceImageId}.jpg"
-
+        val imageUrl = viewModel.getBreedImageUrl(breed)
         Card (
             modifier = Modifier
                 .padding(16.dp)
@@ -62,11 +67,9 @@ fun OnboardingCarousel(breeds: List<BreedsModel>, pagerState: PagerState) {
                     placeholder = painterResource(R.drawable.placehold_error),
                     error = painterResource(R.drawable.ic_launcher_cat_foreground)
                 )
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Text(
-                    text = breed.name ?: "Desconhecido",
+                    text = breed.name ?: "Unknown",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(horizontal = 16.dp),
                     maxLines = 1,
@@ -75,7 +78,6 @@ fun OnboardingCarousel(breeds: List<BreedsModel>, pagerState: PagerState) {
             }
         }
     }
-
     } else {
         CircularProgressIndicator(
             modifier = Modifier

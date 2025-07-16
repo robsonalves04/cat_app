@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.components.form
+package com.example.cat_app.ui.components.utils
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size

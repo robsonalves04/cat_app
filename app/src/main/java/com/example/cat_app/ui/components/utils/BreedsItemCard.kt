@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.components.form
+package com.example.cat_app.ui.components.utils
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -58,7 +58,7 @@ fun BreedItemCard(
         ) {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = "Imagem de ${breed.name}",
+                contentDescription = "Image of ${breed.name}",
                 modifier = Modifier
                     .size(72.dp)
                     .clip(RoundedCornerShape(12.dp)),
@@ -66,9 +66,7 @@ fun BreedItemCard(
                 error = painterResource(id = R.drawable.ic_launcher_cat_foreground),
                 contentScale = ContentScale.Crop
             )
-
             Spacer(modifier = Modifier.width(16.dp))
-
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -99,15 +97,13 @@ fun BreedItemCard(
                     )
                 }
             }
-
             IconButton(onClick = onFavoriteClick) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (isFavorite) "Remover dos favoritos" else "Adicionar aos favoritos",
+                    contentDescription = if (isFavorite) "Remove from the favorites" else "add from the favorites",
                     tint = if (isFavorite) Color.Red else Color.Gray
                 )
             }
-
         }
     }
 }

@@ -1,9 +1,11 @@
-package com.example.cat_app.ui_ux.screen
+package com.example.cat_app.ui.screen
 
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -18,6 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,11 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.cat_app.data.models.BreedsModel
-import com.example.cat_app.ui_ux.components.form.BreedDialog
-import com.example.cat_app.ui_ux.components.form.BreedItemCard
+import com.example.cat_app.ui.components.utils.BreedDialog
+import com.example.cat_app.ui.components.utils.BreedItemCard
 import com.example.cat_app.viewmodel.BreedsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -47,37 +51,43 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun ScreenBreeds(
     viewModel: BreedsViewModel,
     navigateBack: () -> Unit = {},
-    navigateToNextScreen: () -> Unit = {}
 ) {
+    //current context of the composable
     val context = LocalContext.current
+    //list of all breeds from the ViewModel
     val breeds = viewModel.breedItems
+    //list of favorite breeds from the ViewModel
     val favorites = viewModel.favorites
-
+    //state of the lazy list for scroll position
     val listState = rememberLazyListState()
+    //current text entered in the search bar
     var searchQuery by remember { mutableStateOf("") }
-
+    //flag indicating if the user is performing a search
     val isSearching by viewModel.isSearching
+    //filtered list of breeds matching the search query
     val searchResults = viewModel.searchResults
+    //full list of breeds (same as breeds variable)
     val allBreeds = viewModel.breedItems
-
+    //controls visibility of the detail dialog
     var showDialog by remember { mutableStateOf(false) }
+    //currently selected breed for detail view
     var selectedBreed by remember { mutableStateOf<BreedsModel?>(null) }
 
-    // limpar dados apos a busca
+    //clears search data when the screen is disposed
     DisposableEffect(Unit) {
         onDispose {
             viewModel.clearSearch()
         }
     }
 
-    // Carrega dados iniciais
+    //loads initial data when the screen is first displayed
     LaunchedEffect(Unit) {
         viewModel.fetchFavorites(context)
         if (breeds.isEmpty()) viewModel.fetchBreeds(context)
 
     }
 
-    // Paginação
+    //handles loading more items as the user scrolls (pagination)
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .distinctUntilChanged()
@@ -87,14 +97,13 @@ fun ScreenBreeds(
                 }
             }
     }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("🐾 Lista de Gatos") },
+                title = { Text("🐾 List of Cats") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -103,7 +112,7 @@ fun ScreenBreeds(
     ) { paddingValues ->
         val breedsToShow = if (isSearching) searchResults else allBreeds
         Column(modifier = Modifier.padding(paddingValues)) {
-            // Barra de pesquisa
+            //search bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = {
@@ -117,7 +126,7 @@ fun ScreenBreeds(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                label = { Text("Buscar raça...") },
+                label = { Text("Search breed...") },
                 singleLine = true,
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
@@ -125,21 +134,34 @@ fun ScreenBreeds(
                             searchQuery = ""
                             viewModel.clearSearch()
                         }) {
-                            Icon(Icons.Default.Close, contentDescription = "Limpar busca")
+                            Icon(Icons.Default.Close, contentDescription = "clean search")
                         }
                     }
                 },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
             )
-
+            //loading if not found it
+            if (isSearching && searchQuery.isNotBlank() && searchResults.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No breeds found 😿",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Gray
+                    )
+                }
+            }
+            //list of found it
             LazyColumn(state = listState) {
                 items(breedsToShow,
                     key = { it.referenceImageId ?: it.id ?: it.hashCode().toString() }
                 ) { breed ->
                     val isFavorite = favorites.any { it.imageId == breed.referenceImageId }
-                    Log.d("CHECK_FAV", "🐱 ${breed.name} isFavorite=$isFavorite")
-
-                    // Card de gatos (retorno da API)
+                    //card displaying cat breed data fetched from the API
                     BreedItemCard(
                         breed = breed,
                         viewModel = viewModel,
@@ -156,10 +178,8 @@ fun ScreenBreeds(
                             showDialog = true
                         }
                     )
-
-
                 }
-                // Loading de espera
+                //loading of waiting
                 if (!isSearching && viewModel.isLoading.value && showDialog) {
                     item {
                         CircularProgressIndicator(
@@ -171,9 +191,13 @@ fun ScreenBreeds(
                     }
                 }
             }
+            //card with details about the cat
             if (showDialog && selectedBreed != null) {
+                val isFavorite = favorites.any { it.imageId == selectedBreed!!.referenceImageId }
                 BreedDialog(
                     breed = selectedBreed!!,
+                    viewModel = viewModel,
+                    isFavorite = isFavorite,
                     onDismiss = { showDialog = false }
                 )
             }

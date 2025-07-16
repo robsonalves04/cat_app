@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.screen
+package com.example.cat_app.ui.screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,29 +27,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.cat_app.data.models.BreedsModel
-import com.example.cat_app.ui_ux.components.form.BreedDialog
-import com.example.cat_app.ui_ux.components.form.BreedItemCard
+import com.example.cat_app.ui.components.utils.BreedDialog
+import com.example.cat_app.ui.components.utils.BreedItemCard
 import com.example.cat_app.viewmodel.BreedsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenFavorites(viewModel: BreedsViewModel, navigateBack: () -> Unit = {}) {
+    //current context of the composable
     val context = LocalContext.current
+    //state of the lazy list for scroll position
     val listState = rememberLazyListState()
+    //current text entered in the search bar
     var searchQuery by remember { mutableStateOf("") }
+    //list of favorite breeds from the ViewModel
     val favorites = remember { derivedStateOf { viewModel.favorites.distinctBy { it.imageId } } }
+    //list of favorite breeds from the ViewModel
     val favorites_viewmodel = viewModel.favorites
-
+    //controls visibility of the detail dialog
     var showDialog by remember { mutableStateOf(false) }
-    var selectedBreed by remember { mutableStateOf<BreedsModel?>(null)}
+    //currently selected breed for detail view
+    var selectedBreed by remember { mutableStateOf<BreedsModel?>(null) }
 
-    // limpar dados apos a busca
+    //clears search data when the screen is disposed
     DisposableEffect(Unit) {
         onDispose {
             viewModel.clearSearch()
         }
     }
-    // carregamento de listas Todos, Favoritos, e pesquisa
+    //loads initial data when the screen is first displayed
     LaunchedEffect(Unit) {
         viewModel.fetchFavorites(context)
         viewModel.fetchBreeds(context)
@@ -59,10 +65,10 @@ fun ScreenFavorites(viewModel: BreedsViewModel, navigateBack: () -> Unit = {}) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("💜 Favoritos") },
+                title = { Text("💜 Favorites") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -76,10 +82,11 @@ fun ScreenFavorites(viewModel: BreedsViewModel, navigateBack: () -> Unit = {}) {
                         .padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Nenhum favorito ainda 😿", style = MaterialTheme.typography.titleMedium)
+                    Text("No favorites added yet 😿", style = MaterialTheme.typography.titleMedium)
                 }
             }
             else -> {
+                //list of found it
                 LazyColumn(
                     state = listState,
                     modifier = Modifier
@@ -88,8 +95,10 @@ fun ScreenFavorites(viewModel: BreedsViewModel, navigateBack: () -> Unit = {}) {
                 ) {
                     items(favorites.value) { fav ->
                         val breed = viewModel.breedItems.find { it.referenceImageId == fav.imageId }
-                        val isFavorite = favorites_viewmodel.any { it.imageId == breed?.referenceImageId }
+                        val isFavorite =
+                            favorites_viewmodel.any { it.imageId == breed?.referenceImageId }
                         if (breed != null) {
+                            //card displaying cat breed data fetched from the API
                             BreedItemCard(
                                 breed = breed,
                                 onFavoriteClick = {
@@ -109,14 +118,18 @@ fun ScreenFavorites(viewModel: BreedsViewModel, navigateBack: () -> Unit = {}) {
                         }
                     }
                 }
+                //card with details about the cat
                 if (showDialog && selectedBreed != null) {
+                    val isFavorite =
+                        favorites_viewmodel.any { it.imageId == selectedBreed!!.referenceImageId }
                     BreedDialog(
                         breed = selectedBreed!!,
+                        viewModel = viewModel,
+                        isFavorite = isFavorite,
                         onDismiss = { showDialog = false }
                     )
+
                 }
-
-
             }
         }
     }

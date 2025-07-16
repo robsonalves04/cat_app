@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.screen
+package com.example.cat_app.ui.screen
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import com.example.cat_app.ui_ux.components.navigate.AppNavigation
+import com.example.cat_app.ui.components.navigate.AppNavigation
 
 class ScreenMain : ComponentActivity() {
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -14,6 +14,7 @@ class ScreenMain : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            //function for navigation between screens
             AppNavigation()
         }
     }

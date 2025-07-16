@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.screen
+package com.example.cat_app.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -25,8 +25,9 @@ import kotlinx.coroutines.delay
 fun ScreenSplash(
     navigateToNextScreen: () -> Unit = {}
 ) {
+    // Splash screen display time: 2 seconds
     LaunchedEffect (Unit) {
-        delay(2000L) // Tempo de exibição: 2 segundos
+        delay(2000L)
         navigateToNextScreen()
     }
 
@@ -39,7 +40,7 @@ fun ScreenSplash(
         Column (horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 imageVector = Icons.Default.Pets,
-                contentDescription = "Logo",
+                contentDescription = "Brand",
                 modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colors.primary
             )

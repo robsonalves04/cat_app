@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.screen
+package com.example.cat_app.ui.screen
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -18,8 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.cat_app.ui_ux.components.form.OnboardingCarousel
-import com.example.cat_app.ui_ux.components.form.SquareButton
+import com.example.cat_app.ui.components.utils.OnboardingCarousel
+import com.example.cat_app.ui.components.utils.SquareButton
 import com.example.cat_app.viewmodel.BreedsViewModel
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.delay
@@ -35,18 +35,21 @@ fun ScreenOnboard(
     onNavigateToAbout: () -> Unit,
     onNavigateToHelp: () -> Unit,
 ) {
+    //current context of the composable
     val context = LocalContext.current
-    val breeds = viewModel.breedItems.take(10) // Exibe até 10 gatos no carrossel
+    //list of all breeds from the ViewModel, show til 10 items
+    val breeds = viewModel.breedItems.take(10)
+    //list of favorite breeds from the ViewModel
     val favorites = viewModel.favorites
+    //state of the page remember for scroll position
     val pagerState = rememberPagerState()
 
-
-    // Carrega dados iniciais
+    //loads initial data when the screen is first displayed
     LaunchedEffect(Unit) {
         if (favorites.isEmpty()) viewModel.fetchFavorites(context)
         if (breeds.isEmpty()) viewModel.fetchBreeds(context)
     }
-    //efeito de carrousel automatico
+    //automatic carousel effect
     LaunchedEffect(breeds.size) {
         if (breeds.isNotEmpty()) {
             while (true) {
@@ -61,7 +64,6 @@ fun ScreenOnboard(
         modifier = Modifier.fillMaxSize(),
         containerColor =  MaterialTheme.colorScheme.background
     ) { paddingValues ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -72,11 +74,11 @@ fun ScreenOnboard(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🐾 Carrossel no topo
-            OnboardingCarousel(breeds = breeds, pagerState = pagerState)
+            //carousel at the top
+            OnboardingCarousel(breeds = breeds, pagerState = pagerState, viewModel = viewModel)
 
             Spacer(modifier = Modifier.height(16.dp))
-
+            //bottom of the initial screen
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -85,16 +87,16 @@ fun ScreenOnboard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    SquareButton("Todos \uD83D\uDC3E", onNavigateToBreeds)
-                    SquareButton("Favoritos 💜", onNavigateToFavorites)
+                    SquareButton("All Cats \uD83D\uDC3E", onNavigateToBreeds)
+                    SquareButton("Favorites 💜", onNavigateToFavorites)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    SquareButton("Sobre 🔍", onNavigateToAbout)
-                    SquareButton("Ajuda ⚙️", onNavigateToHelp)
+                    SquareButton("About 🔍", onNavigateToAbout)
+                    SquareButton("Help ⚙️", onNavigateToHelp)
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))

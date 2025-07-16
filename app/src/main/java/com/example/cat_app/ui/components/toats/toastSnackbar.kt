@@ -1,4 +1,4 @@
-package com.example.cat_app.ui_ux.components.toats
+package com.example.cat_app.ui.components.toats
 
 import android.app.Activity
 import android.content.Context
@@ -12,7 +12,7 @@ fun toastSnackbar(
     context: Context,
     message: String,
     duration: Int = Snackbar.LENGTH_LONG,
-    backgroundColor: Int = Color.parseColor("#323232"), // Cor padrão
+    backgroundColor: Int = Color.parseColor("#323232"), //stard color
     textColor: Int = Color.WHITE
 ) {
     val view = (context as? Activity)?.findViewById<View>(android.R.id.content)
@@ -21,7 +21,7 @@ fun toastSnackbar(
         val snackbarView = snackbar.view
         snackbarView.setBackgroundColor(backgroundColor)
 
-        // Altera a cor do texto
+        //updates the text color
         val textView = snackbarView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
         textView.setTextColor(textColor)
 

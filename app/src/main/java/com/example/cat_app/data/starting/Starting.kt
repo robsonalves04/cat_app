@@ -28,15 +28,13 @@ class Starting : Application() {
             single<IBreedsService> { BreedsService() }
         }
 
-
         val viewModelModule = module {
             viewModel { BreedsViewModel(get()) }
         }
 
-
         instance = this
 
-        // Inicialização do Koin
+        //initializes the Koin dependency injection framework
         startKoin {
             androidLogger()
             androidContext(this@Starting)
@@ -48,7 +46,6 @@ class Starting : Application() {
                 )
             )
         }
-
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
     }
 

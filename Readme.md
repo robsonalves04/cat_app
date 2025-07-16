@@ -1,12 +1,12 @@
-# ?? Cat Breeds App
+# Cat Breeds App
 
 This is an Android application developed in **Kotlin** using **Jetpack Compose** and the **Cat API**. It allows users to explore different cat breeds, search by breed name, view detailed information, and mark favorites. This project was developed as part of a coding challenge from **Sword Health**.
 
 ---
 
-## ?? Features
+##  Features
 
-### ? Functional Requirements
+###  Functional Requirements
 - [x] **Breed List Screen** with:
   - Cat image
   - Breed name
@@ -23,7 +23,7 @@ This is an Android application developed in **Kotlin** using **Jetpack Compose**
 
 ---
 
-## ??? Technical Specifications
+## Technical Specifications
 
 - Architecture: **MVVM**
 - UI: **Jetpack Compose**
@@ -36,14 +36,14 @@ This is an Android application developed in **Kotlin** using **Jetpack Compose**
 
 ---
 
-## ?? Bonus Implementations
+##  Bonus Implementations
 
 - [x] Error handling for API and connection failures
 - [x] Pagination for cat breeds
 - [x] Modular and clean design pattern
 ---
 
-## ?? Technical Decisions
+##  Technical Decisions
 
 - Used **Jetpack Compose** for modern, reactive UI design.
 - Adopted **MVVM** to separate concerns and ensure testability.
@@ -54,28 +54,28 @@ This is an Android application developed in **Kotlin** using **Jetpack Compose**
 
 ---
 
-## ?? How to Run
+##  How to Run
 
 1. Clone the repository  
 2. Build and Run the project in Android Studio
 
 ---
 
-## ?? API Reference
+## API Reference
 
 - [TheCatAPI Docs](https://thecatapi.com/)
 - Authentication: API Key via Header `x-api-key`
 
 ---
 
-## ????? Author
+##  Author
 
 Robson Alves  
 Mobile Developer | Kotlin + Compose Enthusiast  
-[LinkedIn](https://www.linkedin.com/in/robson-alves04/) • [GitHub](https://github.com/robsonalves04)
+[LinkedIn](https://www.linkedin.com/in/robson-alves04/)  [GitHub](https://github.com/robsonalves04)
 
 ---
 
-## ?? License
+##  License
 
 This project is part of a private coding challenge and is not intended for commercial use.

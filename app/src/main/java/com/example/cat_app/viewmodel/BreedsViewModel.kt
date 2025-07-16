@@ -65,9 +65,6 @@ class BreedsViewModel(private val breedsService: IBreedsService) : ViewModel() {
     //public read-only state for observing the searching status
     val isSearching: State<Boolean> get() = _isSearching
 
-    //holds detailed data for a selected breed, null if none selected
-    var breedDetails = mutableStateOf<BreedDetailsModel?>(null)
-
 
     //fetches breeds from the API
     fun fetchBreeds(context: Context, loadMore: Boolean = false) {
